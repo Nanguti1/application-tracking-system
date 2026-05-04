@@ -8,6 +8,8 @@ use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\InterviewController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PipelineController;
+use App\Http\Controllers\EmailTemplateController;
+use App\Http\Controllers\ReportController;
 
 Route::inertia('/', 'welcome', [
     'canRegister' => Features::enabled(Features::registration()),
@@ -74,6 +76,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware(['permission:view_pipeline'])->group(function () {
         Route::get('jobs/{job}/pipeline', [PipelineController::class, 'show'])->name('pipeline.show');
         Route::post('jobs/{job}/pipeline/move', [PipelineController::class, 'moveApplication'])->name('pipeline.move');
+    });
+
+    Route::middleware(['permission:view_jobs'])->group(function () {
+        Route::get('jobs/{job}/email-templates', [EmailTemplateController::class, 'index'])->name('email-templates.index');
+        Route::get('jobs/{job}/email-templates/{template}/edit', [EmailTemplateController::class, 'edit'])->name('email-templates.edit');
+        Route::put('jobs/{job}/email-templates/{template}', [EmailTemplateController::class, 'update'])->name('email-templates.update');
+    });
+
+    Route::middleware(['role:Super Admin|HR Admin'])->group(function () {
+        Route::get('admin/reports', [ReportController::class, 'index'])->name('reports.index');
+        Route::get('admin/reports/export/csv', [ReportController::class, 'exportCsv'])->name('reports.export.csv');
     });
 
     // Candidate Dashboard

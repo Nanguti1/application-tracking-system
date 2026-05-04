@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Job;
 use App\Models\JobApplication;
 use App\Models\User;
+use App\Notifications\ApplicationStatusChanged;
 
 class ApplicationService
 {
@@ -61,6 +62,10 @@ class ApplicationService
         if ($status === 'rejected') {
             $application->update(['rejected_at' => now()]);
             $application->job->increment('rejected_count');
+        }
+
+        if ($application->user) {
+            $application->user->notify(new ApplicationStatusChanged($application->fresh('job'), $oldStatus, $status));
         }
 
         return $application;

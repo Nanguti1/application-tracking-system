@@ -44,11 +44,12 @@ export default function CareersShow({ job, userApplied, requiresAuth }: Props) {
         expected_salary: '',
         location: '',
         availability_date: '',
+        resume: null as File | null,
     });
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        post(route('careers.apply', job));
+        post(route('careers.apply', job), { forceFormData: true });
     };
 
     if (userApplied) {
@@ -296,6 +297,18 @@ export default function CareersShow({ job, userApplied, requiresAuth }: Props) {
                                             placeholder="Tell us why you're interested in this position..."
                                             rows={6}
                                         />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-900 mb-2">
+                                            CV / Resume (PDF or DOCX) *
+                                        </label>
+                                        <Input
+                                            type="file"
+                                            accept=".pdf,.doc,.docx"
+                                            onChange={(e) => setData('resume', e.target.files?.[0] ?? null)}
+                                        />
+                                        {errors.resume && <p className="mt-1 text-sm text-red-600">{errors.resume}</p>}
                                     </div>
 
                                     <Button type="submit" disabled={processing} className="w-full">

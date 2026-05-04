@@ -44,22 +44,46 @@ class InterviewController extends Controller
             'application_ids' => 'required|array|min:1',
             'interview_stage_id' => 'required|exists:interview_stages,id',
             'date' => 'required|date|after:today',
-            'time' => 'required|date_format:H:i',
+            'time' => 'nullable|date_format:H:i',
+            'start_time' => 'nullable|date_format:H:i',
+            'end_time' => 'nullable|date_format:H:i|after:start_time',
+            'break_start' => 'nullable|date_format:H:i',
+            'break_end' => 'nullable|date_format:H:i|after:break_start',
             'location' => 'nullable|string',
             'meeting_link' => 'nullable|url',
         ]);
 
         $stage = InterviewStage::find($validated['interview_stage_id']);
 
-        foreach ($validated['application_ids'] as $appId) {
+        $scheduleTimes = [];
+        if (!empty($validated['start_time']) && !empty($validated['end_time'])) {
+            $cursor = now()->parse($validated['date'] . ' ' . $validated['start_time']);
+            $end = now()->parse($validated['date'] . ' ' . $validated['end_time']);
+            $breakStart = !empty($validated['break_start']) ? now()->parse($validated['date'] . ' ' . $validated['break_start']) : null;
+            $breakEnd = !empty($validated['break_end']) ? now()->parse($validated['date'] . ' ' . $validated['break_end']) : null;
+
+            while ($cursor->copy()->addMinutes($stage->duration_minutes)->lte($end)) {
+                if ($breakStart && $breakEnd && $cursor->betweenIncluded($breakStart, $breakEnd->copy()->subMinute())) {
+                    $cursor = $breakEnd->copy();
+                    continue;
+                }
+                $scheduleTimes[] = $cursor->copy();
+                $cursor->addMinutes($stage->duration_minutes);
+            }
+        } elseif (!empty($validated['time'])) {
+            $scheduleTimes[] = now()->parse($validated['date'] . ' ' . $validated['time']);
+        }
+
+        foreach ($validated['application_ids'] as $index => $appId) {
             $application = JobApplication::find($appId);
             
             if ($application->job_id === $job->id) {
+                $scheduledAt = $scheduleTimes[$index] ?? ($scheduleTimes[0] ?? now()->parse($validated['date'] . ' 09:00'));
                 Interview::create([
                     'job_id' => $job->id,
                     'job_application_id' => $application->id,
                     'interview_stage_id' => $stage->id,
-                    'scheduled_at' => now()->parse($validated['date'] . ' ' . $validated['time']),
+                    'scheduled_at' => $scheduledAt,
                     'duration_minutes' => $stage->duration_minutes,
                     'location' => $validated['location'],
                     'meeting_link' => $validated['meeting_link'],

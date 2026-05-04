@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Job;
 use App\Models\JobApplication;
+use App\Models\Resume;
 use App\Services\JobService;
 use App\Services\ApplicationService;
+use App\Jobs\ParseAndScoreApplicationResume;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -80,6 +82,7 @@ class CareersController extends Controller
             'expected_salary' => 'nullable|numeric|min:0',
             'location' => 'nullable|string|max:255',
             'availability_date' => 'nullable|date',
+            'resume' => 'required|file|mimes:pdf,doc,docx|max:5120',
         ]);
 
         $validated['job_id'] = $job->id;
@@ -87,10 +90,18 @@ class CareersController extends Controller
         try {
             $application = $this->applicationService->submitApplication($validated);
 
-            // Dispatch CV parsing job if file is uploaded
-            if ($request->hasFile('resume')) {
-                // This will be handled in a separate CV upload endpoint
-            }
+            $uploadedResume = $request->file('resume');
+            $storedPath = $uploadedResume->store('resumes', 'private');
+
+            $resume = Resume::create([
+                'job_application_id' => $application->id,
+                'original_filename' => $uploadedResume->getClientOriginalName(),
+                'file_path' => $storedPath,
+                'mime_type' => $uploadedResume->getMimeType() ?? 'application/octet-stream',
+                'file_size' => $uploadedResume->getSize(),
+            ]);
+
+            ParseAndScoreApplicationResume::dispatch($resume->id);
 
             return redirect()->route('applications.show', $application)
                 ->with('success', 'Application submitted successfully!');

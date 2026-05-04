@@ -103,7 +103,7 @@ class JobController extends Controller
         return redirect()->route('jobs.show', $job)->with('success', 'Job updated successfully.');
     }
 
-    public function delete(Job $job)
+    public function destroy(Job $job)
     {
         $this->authorize('delete', $job);
 

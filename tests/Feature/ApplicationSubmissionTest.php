@@ -7,6 +7,7 @@ use App\Models\Job;
 use App\Models\JobApplication;
 use App\Services\ApplicationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
 
 class ApplicationSubmissionTest extends TestCase
@@ -27,6 +28,7 @@ class ApplicationSubmissionTest extends TestCase
             'linkedin_profile' => 'https://linkedin.com/in/johndoe',
             'portfolio_url' => 'https://johndoe.dev',
             'location' => 'San Francisco, CA',
+            'resume' => UploadedFile::fake()->create('resume.pdf', 200, 'application/pdf'),
         ]);
 
         $this->assertDatabaseHas('job_applications', [
@@ -69,6 +71,7 @@ class ApplicationSubmissionTest extends TestCase
             'email' => 'john@example.com',
             'phone' => '555-1234',
             'years_of_experience' => 5,
+            'resume' => UploadedFile::fake()->create('resume.pdf', 200, 'application/pdf'),
         ]);
 
         $response->assertRedirect();

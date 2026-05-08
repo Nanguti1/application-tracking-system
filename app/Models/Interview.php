@@ -4,8 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Spatie\ActivityLog\Traits\LogsActivity;
-use Spatie\ActivityLog\LogOptions;
+use Spatie\Activitylog\Contracts\LogOptions;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
 
 class Interview extends Model
 {

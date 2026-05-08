@@ -10,6 +10,9 @@
     "skills": [
         "fortify-development",
         "laravel-best-practices",
-        "wayfinder-development"
+        "configuring-horizon",
+        "wayfinder-development",
+        "inertia-react-development",
+        "tailwindcss-development"
     ]
 }

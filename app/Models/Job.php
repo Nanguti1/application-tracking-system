@@ -4,8 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Spatie\ActivityLog\Traits\LogsActivity;
-use Spatie\ActivityLog\LogOptions;
+use Spatie\Activitylog\Contracts\LogOptions;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
 
 class Job extends Model
 {
@@ -84,7 +84,7 @@ class Job extends Model
 
     public function canAcceptApplications(): bool
     {
-        return $this->status === 'published' && 
-               (!$this->deadline_at || $this->deadline_at->isFuture());
+        return $this->status === 'published' &&
+               (! $this->deadline_at || $this->deadline_at->isFuture());
     }
 }

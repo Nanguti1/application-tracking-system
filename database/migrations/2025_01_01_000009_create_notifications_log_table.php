@@ -22,7 +22,6 @@ return new class extends Migration
             $table->integer('retry_count')->default(0);
             $table->dateTime('sent_at')->nullable();
             $table->timestamps();
-            $table->index(['notifiable_type', 'notifiable_id']);
             $table->index('status');
             $table->index('created_at');
         });
